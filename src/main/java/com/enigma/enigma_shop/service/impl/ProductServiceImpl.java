@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-// lombok RequiredArgumentConstuctor -> constructor injection, jadi enggak perlu pakai @Autowired
+// lombok RequiredArgumentConstructor -> constructor injection, jadi enggak perlu pakai @Autowired
 
 @RequiredArgsConstructor // jadi enggak error lagi
 @Service // tambahkan component ya di service dan repository
@@ -52,7 +52,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAll() {
+    public List<Product> getAll(String name) {
+//        productRepository.findByName() tapi enggak ada nih find by name
+        // harus apa nih gw, bikin query method di repository
+        if(name != null ) {
+            return productRepository.findAllByNameLike("%" + name + "%");
+        }
         return productRepository.findAll();
     }
 

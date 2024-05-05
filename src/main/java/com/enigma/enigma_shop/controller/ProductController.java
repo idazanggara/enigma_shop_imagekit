@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequiredArgsConstructor
+@RequiredArgsConstructor // ini sudah termasuk autowired, jadi sama seperti constructor injection
 @RequestMapping(path = APIUrl.PRODUCT_API)
 public class ProductController {
     private final ProductService productService;
@@ -32,8 +32,10 @@ public class ProductController {
         return  productService.getById(id);
     }
     @GetMapping
-    public List<Product> getAllProduct(){
-        return productService.getAll();
+    public List<Product> getAllProduct(
+            @RequestParam(name = "name", required = false) String name
+    ){
+        return productService.getAll(name);
     }
     @PutMapping
     public Product updateProduct(@RequestBody Product product){
