@@ -1,5 +1,6 @@
 package com.enigma.enigma_shop.entity;
 
+import com.enigma.enigma_shop.constant.ConstantTable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor // untuk contructor kosong
 // configurasi sama kayak jpa kemaren
 @Entity
-@Table(name = "m_product")
+@Table(name = ConstantTable.PRODUCT)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
