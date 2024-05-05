@@ -12,6 +12,13 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     // find by name -< tidak boleh sembarangan buat nama
     // Optional<T> findBy... -> result List/Satuan
     // Stream<T>/List<T> findAllBy.. ->  List
+    // contoh lain
+    // List<Product> findAllByNameAndPrice(String name, Long price);
     // karena name spesifik, jadi kita pakai query like
     List<Product> findAllByNameLike(String name);
+
+    // simulasi filter berdasarkan name, minPrice, maxPrice, dan stock menggunakan operasi or
+    // jika enggak ketemu maka tampilkan semua productnya
+
+//    @Query(nativeQuery = true) // nah ini untuk manual, tapi hati"
 }
