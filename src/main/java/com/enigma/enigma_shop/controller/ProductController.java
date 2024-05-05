@@ -44,6 +44,6 @@ public class ProductController {
     @DeleteMapping(path = APIUrl.PATH_VAR_ID)
     public String deleteById(@PathVariable String id) {
         productService.deleteById(id);
-        return "Ok Succes Delete";
+        return "Ok Succes Delete Product";
     }
 }
