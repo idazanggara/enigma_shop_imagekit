@@ -1,5 +1,6 @@
 package com.enigma.enigma_shop.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +12,20 @@ import lombok.Setter;
 // nah disini kita juga bisa tambahkan contructornya, kalau kalian buat contructor manual, nanti error karena tambrakkan
 @AllArgsConstructor
 @NoArgsConstructor // untuk contructor kosong
+// configurasi sama kayak jpa kemaren
+@Entity
+@Table(name = "m_product")
 public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "price", nullable = false, columnDefinition = "BIGINT CHECK (price >= 0)")
     private Long price;
+
+    @Column(name = "stock", nullable = false, columnDefinition = "INT CHECK (stock >= 0)")
+    private Integer stock;
 }
