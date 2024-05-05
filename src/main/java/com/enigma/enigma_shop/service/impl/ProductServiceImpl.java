@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
         // pertama bisa di cari dulu idnya
 //        productRepository.findById(product.getId());// tapi ini kan berulang, kita udah ada getbyid diatas
         getById(product.getId()); // dah begini aja, jangan di return apapun, kalau nanti idnya enggak ada, dia akan throw diatas
-        return productRepository.save(product);
+        return productRepository.saveAndFlush(product);
         // nah update sama nih, tinggal save aja, tapi kalian bisa validasi diatas
     }
 
