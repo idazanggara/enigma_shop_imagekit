@@ -27,8 +27,9 @@ public class Customer {
     @Column(name = "address")
     private String address;
     @Column(name = "birth_date")
-    @Temporal(TemporalType.DATE)
-    @JsonFormat(pattern = "yyyy-mm-dd")
+    @Temporal(TemporalType.DATE) // karena kita menggunakan DATE tipe datanya
+    // dan temporal ini kita batasi hanya tanggal aja yg masuk datanya, karena date itu bisa dapet hari tanggal dan jam
+    @JsonFormat(pattern = "yyyy-MM-dd")
     // yyyy-mm-dd : format date json
     // date dari java util
     private Date birthDate;
