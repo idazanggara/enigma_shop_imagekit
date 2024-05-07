@@ -165,6 +165,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     public Customer findByIdOrThrowNotFound(String id) {
+        // artinya, kita findById, kalau enggak ada dilempar atau di Throw,
+        // jadi kan sebenernya di bungkus sama optional dan kita pakai.get maka datanya menjadi Customer kayak kemaren. tapi dengan .orElseThrow kita juga gunakan .get ketika ada datanya dan otomatis di lempat throw ketika data null
         return customerRepository.findById(id).orElseThrow(() -> new RuntimeException("customer not found"));
     }
+
+
+    @Override
+    public void updateStatusById(String id, Boolean status) {
+        findByIdOrThrowNotFound(id);
+        customerRepository.updateStatus(id, status);
+
+    }
+
+
 }

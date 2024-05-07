@@ -35,4 +35,7 @@ public class Customer {
     private Date birthDate;
     @Column(name = "status")
     private Boolean status;
+
+
+    // setelah kita buat update status, bisa jelasin, kalau nanti status itu jangan di update di sini, nanti kita bisa pakai DTO  
 }

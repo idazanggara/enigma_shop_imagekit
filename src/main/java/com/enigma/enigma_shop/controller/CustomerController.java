@@ -56,4 +56,13 @@ public class CustomerController {
         customerService.deleteById(id);
         return "OK Succes Delete Customer";
     }
+
+    @PutMapping(path = "/{id}")
+    public String UpdateStatus(
+            @PathVariable String id,
+            @RequestParam(name = "status") Boolean status){
+        customerService.updateStatusById(id, status);
+        return "Oke success update status"
+    ;}
+
 }
