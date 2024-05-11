@@ -2,6 +2,7 @@ package com.enigma.enigma_shop.specification;
 
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.entity.Customer;
+import com.enigma.enigma_shop.util.DateUtil;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -48,14 +49,7 @@ public class CustomerSpecification {
 			}
 
 			if (request.getBirthDate() != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-				sdf.setTimeZone(TimeZone.getTimeZone("Asia/Jakarta"));
-				Date tempDate = new Date();
-				try {
-					tempDate = sdf.parse(request.getBirthDate());
-				} catch (ParseException e) {
-					throw new RuntimeException(e);
-				}
+				Date tempDate = DateUtil.parseDate(request.getBirthDate(), "yyyy-MM-dd");
 				Predicate birthDatePredicate = criteriaBuilder.equal(root.get("birthDate"), tempDate);
 				predicates.add(birthDatePredicate);
 			}
