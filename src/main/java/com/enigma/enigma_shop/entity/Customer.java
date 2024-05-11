@@ -37,5 +37,7 @@ public class Customer {
     private Boolean status;
 
 
-    // setelah kita buat update status, bisa jelasin, kalau nanti status itu jangan di update di sini, nanti kita bisa pakai DTO  
+    // setelah kita buat update status, bisa jelasin, kalau nanti status itu jangan di update di sini, nanti kita bisa pakai DTO
+
+
 }

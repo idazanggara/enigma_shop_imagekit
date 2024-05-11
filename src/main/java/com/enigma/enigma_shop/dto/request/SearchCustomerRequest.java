@@ -12,4 +12,8 @@ public class SearchCustomerRequest {
 	private String mobilePhoneNo;
 	private String birthDate;
 	private Boolean status;
+
+	// kalau cutomer mau di tambah pagination
+	private Integer page;
+	private Integer size;
 }

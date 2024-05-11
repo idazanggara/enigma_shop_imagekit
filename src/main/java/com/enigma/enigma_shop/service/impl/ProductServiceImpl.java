@@ -1,10 +1,17 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
+import com.enigma.enigma_shop.specification.ProductSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAll(String name) {
+    public List<Product> getAllQueryMethod(String name) {
 //        productRepository.findByName() tapi enggak ada nih find by name
         // harus apa nih gw, bikin query method di repository
         if(name != null ) {
@@ -75,5 +82,25 @@ public class ProductServiceImpl implements ProductService {
     // delete juga sama
         Product currentProduct = getById(id);
         productRepository.delete(currentProduct);
+    }
+
+    @Override
+    public Page<Product> getAll(SearchProductRequest request) {
+        // kalau mau di kasih validasi
+        if(request.getPage() <= 0) {
+            request.setPage(1);
+        }
+        String validSortBy ;
+        if ("name".equalsIgnoreCase(request.getSortBy()) || "price".equalsIgnoreCase(request.getSortBy()) || "stock".equalsIgnoreCase(request.getSortBy())) {
+            validSortBy = request.getSortBy();
+        } else {
+            validSortBy = "name";
+        }
+
+        Sort sort = Sort.by(Sort.Direction.fromString(request.getDirection()) /*mengambil arah sortingnya*/,validSortBy /*request.getSortBy() /*berdasarkan apa nih sortingnya*/);
+        Pageable pageable = PageRequest.of((request.getPage() - 1), request.getSize(), sort);
+
+        Specification<Product> specification = ProductSpecification.getSpecification(request);
+        return productRepository.findAll(specification ,pageable);
     }
 }
