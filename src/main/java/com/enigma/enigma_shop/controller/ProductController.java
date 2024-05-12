@@ -1,6 +1,7 @@
 package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
+import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.dto.response.CommonResponse;
 import com.enigma.enigma_shop.dto.response.PagingResponse;
@@ -30,9 +31,9 @@ public class ProductController {
 //    @PostMapping(path = "/api/products")
 //    @GetMapping(path = "/api/products/{id}")
     @PostMapping
-    public ResponseEntity<CommonResponse<Product>>  createNewProduct(@RequestBody Product product){
+    public ResponseEntity<CommonResponse<Product>>  createNewProduct(@RequestBody NewProductRequest productRequest){
         // return productService.create(product);
-        Product newProduct = productService.create(product);
+        Product newProduct = productService.create(productRequest);
 //        return ResponseEntity
 //                .status(HttpStatus.CREATED)
 //                .body(newProduct); // cuman returnya jadi error nih guys, harus kita bungkus jadi common response dulu nih\

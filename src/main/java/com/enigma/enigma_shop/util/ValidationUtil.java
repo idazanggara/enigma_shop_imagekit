@@ -18,11 +18,11 @@ public class ValidationUtil {
 	private final Validator validator;
 
 // nanti DTO nya akan masuk jadi parameter objectnya
-	public void validate(Object o) {
+	public void validate(Object obj) {
 		// disni kenapa Set? karena anotasi validasi kita banyak,
 		// jadi sama dia akan di kumpulin menjadi satu
 		// set ini apa? harus unik ya
-		Set<ConstraintViolation<Object>> validate = validator.validate(o);// ini untuk triggernya
+		Set<ConstraintViolation<Object>> validate = validator.validate(obj);// ini untuk triggernya
 		// kalau validasinya tidak kosong, maka kita throw si ConstraintViolationException
 		if (!validate.isEmpty()) {
 			throw new ConstraintViolationException(validate);

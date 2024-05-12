@@ -2,10 +2,7 @@ package com.enigma.enigma_shop.entity;
 
 import com.enigma.enigma_shop.constant.ConstantTable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 // karena kita pakai lombok, kita udah bisa langsung tambahkan anotasi aja, itu sama seperti generate manual, jadi tidak panjang lagi
 @Getter
@@ -14,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor // untuk contructor kosong
 // configurasi sama kayak jpa kemaren
+@Builder
 @Entity
 @Table(name = ConstantTable.PRODUCT)
 public class Product {

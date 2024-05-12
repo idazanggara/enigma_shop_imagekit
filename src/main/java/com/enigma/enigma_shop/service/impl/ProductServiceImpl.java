@@ -1,10 +1,12 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
 import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.specification.ProductSpecification;
+import com.enigma.enigma_shop.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,14 +38,23 @@ public class ProductServiceImpl implements ProductService {
 //        this.productRepository = productRepository;
 //    }
 
+     private final ValidationUtil validationUtil;
+
     @Override
-    public Product create(Product product) {
+    public Product create(NewProductRequest productRequest) {
         // productRepository.
         // kenapa ada method yg cukup banyak? ada yg bisa jelasin?
         // soalnya interface repository kita extend, dan ketika save udah otomatis menerima entity yg kita set di repository, coba kita ganti object
-        Product newProduct = productRepository.saveAndFlush(product);
         // saveAndFlush, jadi ketika product gw save, dia akan otomatis mengembalikan id yg berhasil kedave
-        return newProduct;
+//        Product newProduct = productRepository.saveAndFlush(product);
+
+        validationUtil.validate(productRequest); // ini selalu di panggil paling atas
+        Product product = Product.builder()
+                .name(productRequest.getName())
+                .price(productRequest.getPrice())
+                .stock(productRequest.getStock())
+                .build();
+        return productRepository.saveAndFlush(product);
     }
 
     @Override
