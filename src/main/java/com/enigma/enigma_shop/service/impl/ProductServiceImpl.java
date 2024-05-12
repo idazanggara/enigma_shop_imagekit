@@ -12,7 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +53,10 @@ public class ProductServiceImpl implements ProductService {
         // kita bisa validasi kalau misalnya datanya enggak ada
         if (optionalProduct.isEmpty()){ // bisa throw
             // nah catchnya kapan? itu dah di handle sama spring bootnya, jadi sebenernya kita jarang try catch, jadi hanya case tertentu aja nanti kita pakai try-cacth
-            throw new RuntimeException("product not found");
+//            throw new RuntimeException("product not found");
+            // Saat sudah menggunakan ErrorController, thrownya kita uba
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "product not found");
+            // nah nanti pada saat di throw dia akan mengarah ke method yg kita buat di errorController
         }
         // nah dengan menggunakan method get ini, maksudnya Optionalnya di buat dan mengembalikan Productnya aja
         // nah tapi method getnya udah ngetrhoe sebenernya, jadi kalau valuenya kosong dia akan ngethrow

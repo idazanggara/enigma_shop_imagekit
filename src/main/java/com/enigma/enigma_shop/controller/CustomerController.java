@@ -6,6 +6,8 @@ import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +18,21 @@ import java.util.List;
 public class CustomerController {
     private final CustomerService customerService;
     @PostMapping
-    public Customer createNewCustomer(@RequestBody Customer product) {
-        return customerService.create(product);
+    public ResponseEntity<Customer> createNewCustomer(@RequestBody Customer product) {
+        Customer customer = customerService.create(product);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(customer);
     }
 
     @GetMapping(path = APIUrl.PATH_VAR_ID)
-    public Customer getCustomerById(@PathVariable String id) {
-        return customerService.getById(id);
+    public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {
+        Customer customer = customerService.getById(id);
+        return ResponseEntity.ok(customer);
     }
 
     @GetMapping
-    public List<Customer> getAllCustomer(
+    public ResponseEntity<List<Customer>> getAllCustomer(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "mobilePhoneNo", required = false) String phoneNumber,
             @RequestParam(name = "birthDate", required = false) @JsonFormat(pattern = "yyyy-MM-dd") String birthDate, // pakai json format untuk format datenya
@@ -43,26 +49,28 @@ public class CustomerController {
                 .birthDate(birthDate)
                 .status(status)
                 .build(); // ini seperti keyword new
-        return customerService.getAll(searchCustomerRequest);
+        List<Customer> customers = customerService.getAll(searchCustomerRequest);
+        return ResponseEntity.ok(customers);
     }
 
     @PutMapping
-    public Customer updateCustomer(@RequestBody Customer product) {
-        return customerService.update(product);
+    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer payload) {
+        Customer customer = customerService.update(payload);
+        return ResponseEntity.ok(customer);
     }
 
     @DeleteMapping(path = APIUrl.PATH_VAR_ID)
-    public String deleteById(@PathVariable String id) {
+    public ResponseEntity<String> deleteById(@PathVariable String id) {
         customerService.deleteById(id);
-        return "OK Succes Delete Customer";
+        return ResponseEntity.ok("OK Succes Delete Customer");
     }
 
     @PutMapping(path = "/{id}")
-    public String UpdateStatus(
+    public ResponseEntity<String> UpdateStatus(
             @PathVariable String id,
             @RequestParam(name = "status") Boolean status){
         customerService.updateStatusById(id, status);
-        return "Oke success update status"
-    ;}
+        return ResponseEntity.ok("Oke success update status");
+    }
 
 }
