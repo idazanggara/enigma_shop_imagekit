@@ -7,6 +7,8 @@ import com.enigma.enigma_shop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,15 +28,21 @@ public class ProductController {
 //    @PostMapping(path = "/api/products")
 //    @GetMapping(path = "/api/products/{id}")
     @PostMapping
-    public Product createNewProduct(@RequestBody Product product){
-        return productService.create(product);
+    public ResponseEntity<Product>  createNewProduct(@RequestBody Product product){
+        // return productService.create(product);
+        Product newProduct = productService.create(product);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(newProduct);
     }
     @GetMapping(path = APIUrl.PATH_VAR_ID)
-    public Product getById(@PathVariable String id) {
-        return  productService.getById(id);
+    public ResponseEntity<Product> getById(@PathVariable String id) {
+        // return  productService.getById(id);
+        Product product = productService.getById(id);
+        return ResponseEntity.ok(product);
     }
     @GetMapping
-    public Page<Product> getAllProduct(
+    public ResponseEntity<Page<Product>> getAllProduct(
             @RequestParam(name = "page",defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
             // kan nanti bisa banyak yg kita kirim ya
@@ -54,15 +62,20 @@ public class ProductController {
                 .direction(direction)
                 .name(name)
                 .build();
-        return productService.getAll(request);
+//        return productService.getAll(request);
+        Page<Product> products = productService.getAll(request);
+        return ResponseEntity.ok(products);
     }
     @PutMapping
-    public Product updateProduct(@RequestBody Product product){
-        return productService.update(product);
+    public ResponseEntity<Product> updateProduct(@RequestBody Product product){
+//        return productService.update(product);
+        Product update = productService.update(product);
+        return ResponseEntity.ok(update);
     }
     @DeleteMapping(path = APIUrl.PATH_VAR_ID)
-    public String deleteById(@PathVariable String id) {
+    public ResponseEntity<String> deleteById(@PathVariable String id) {
         productService.deleteById(id);
-        return "Ok Succes Delete Product";
+//        return "Ok Succes Delete Product";
+        return ResponseEntity.ok("Ok Succes Delete Product");
     }
 }
