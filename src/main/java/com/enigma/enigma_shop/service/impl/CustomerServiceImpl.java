@@ -1,10 +1,13 @@
 package com.enigma.enigma_shop.service.impl;
 
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
+import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
+import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.repository.CustomerRepository;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.enigma.enigma_shop.specification.CustomerSpecification;
+import com.enigma.enigma_shop.util.ValidationUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -14,8 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +29,16 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService {
     private final EntityManager entityManager; // dan sudah di instance ya
     private final CustomerRepository customerRepository;
+    private final ValidationUtil validationUtil;
 
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Customer create(Customer customer) {
         return customerRepository.saveAndFlush(customer);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Customer getById(String id) {
         return findByIdOrThrowNotFound(id);
@@ -144,35 +153,48 @@ public class CustomerServiceImpl implements CustomerService {
 //        return customerRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<Customer> getAll(SearchCustomerRequest request) {
+    public List<CustomerResponse> getAll(SearchCustomerRequest request) {
         // kalau kita findAll, ini bisa menerima paramter cuma enggak ada ada nih spesification
         // kita harus tambahkan extend dulu di repositorynya
         // nah kalau udah di extend baru dia ada tuh paramter specification
         // tinggal kita panggil specification dari customerspecification
         Specification<Customer> customerSpecification = CustomerSpecification.getSpecification(request);// karena dia static method jadi bisa langsung
-        return customerRepository.findAll(customerSpecification);
+        return customerRepository.findAll(customerSpecification).stream().map(this::convertCustomerToCustomerResponse).toList();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Customer update(Customer customer) {
-        findByIdOrThrowNotFound(customer.getId());
-        return customerRepository.saveAndFlush(customer);
+    public CustomerResponse update(UpdateCustomerRequest customerRequest) {
+//        findByIdOrThrowNotFound(customer.getId());
+//        Customer updatedCustomer = customerRepository.saveAndFlush(customer);
+//        return convertCustomerToCustomerResponse(updatedCustomer);
+        validationUtil.validate(customerRequest);
+        Customer currentCustomer = findByIdOrThrowNotFound(customerRequest.getId());
+        currentCustomer.setName(customerRequest.getName());
+        currentCustomer.setMobilePhoneNo(customerRequest.getMobilePhoneNo());
+        currentCustomer.setAddress(customerRequest.getAddress());
+        currentCustomer.setBirthDate(Date.valueOf(customerRequest.getBirthDate()));
+        customerRepository.saveAndFlush(currentCustomer);
+
+        return convertCustomerToCustomerResponse(currentCustomer);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteById(String id) {
         Customer customer = findByIdOrThrowNotFound(id);
         customerRepository.delete(customer);
     }
 
-    public Customer findByIdOrThrowNotFound(String id) {
+    private Customer findByIdOrThrowNotFound(String id) {
         // artinya, kita findById, kalau enggak ada dilempar atau di Throw,
         // jadi kan sebenernya di bungkus sama optional dan kita pakai.get maka datanya menjadi Customer kayak kemaren. tapi dengan .orElseThrow kita juga gunakan .get ketika ada datanya dan otomatis di lempat throw ketika data null
         return customerRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "customer not found"));
     }
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateStatusById(String id, Boolean status) {
         findByIdOrThrowNotFound(id);
@@ -180,5 +202,29 @@ public class CustomerServiceImpl implements CustomerService {
 
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public CustomerResponse getOneById(String id) {
+        Customer customerById = findByIdOrThrowNotFound(id);
+        return convertCustomerToCustomerResponse(customerById);
+    }
 
+    private CustomerResponse convertCustomerToCustomerResponse(Customer customer) {
+
+        String userId;
+        if(customer.getUserAccount() == null){
+            userId = null;
+        } else {
+            userId = customer.getUserAccount().getId();
+        }
+
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .name(customer.getName())
+                .mobilePhoneNo(customer.getMobilePhoneNo())
+                .address(customer.getAddress())
+                .status(customer.getStatus())
+                .userAccountId(userId)
+                .build();
+    }
 }

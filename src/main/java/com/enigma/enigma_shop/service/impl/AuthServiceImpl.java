@@ -12,7 +12,9 @@ import com.enigma.enigma_shop.service.AuthService;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.enigma.enigma_shop.service.JwtService;
 import com.enigma.enigma_shop.service.RoleService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,8 +22,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,38 @@ public class AuthServiceImpl implements AuthService {
 	private final JwtService jwtService;
 	private final AuthenticationManager authenticationManager;
 
+	// kita enggak pakai final, karena butuh constructor
+	@Value("${enigma_shop.superadmin.username}")
+	private String superAdminUsername;
+	@Value("${enigma_shop.superadmin.password}")
+	private String superAdminPassword;
+
+
+	@Transactional(rollbackFor = Exception.class)
+	// nanti method akan di panggil/dieksekusi ketika kita restart atau start aplikasi
+	@PostConstruct // berguna untuk mengeksekusi method yg akan dijalankan pada saat aplikasi pertama kali dijalankan
+	public void initSuperAdmin() {
+
+		Optional<UserAccount> currentUser = userAccountRepository.findByUsername(/*"superadmin"*/ superAdminUsername);
+		if (currentUser.isPresent()) return; // kalau ada ya return aja
+
+		Role superAdmin = roleService.getOrSave(UserRole.ROLE_SUPER_ADMIN);
+		Role admin = roleService.getOrSave(UserRole.ROLE_ADMIN);
+		Role customer = roleService.getOrSave(UserRole.ROLE_CUSTOMER);
+
+		UserAccount account = UserAccount.builder()
+						.username(/*"superadmin"*/ superAdminUsername)
+						.password(passwordEncoder.encode(/*"password"*/ superAdminPassword))
+						.role(List.of(superAdmin, admin, customer))
+						.isEnable(true)
+						.build();
+		userAccountRepository.save(account); // save aja cukup karena void method kita.
+		// jadi ini kalau akun superadmin belum ada, kita buat. kalau dah aja yaudah
+
+
+	}
+
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public RegisterResponse register(AuthRequest request) throws DataIntegrityViolationException {
 //		userAccountRepository.saveAndFlush(new UserAccount());
@@ -72,11 +108,13 @@ public class AuthServiceImpl implements AuthService {
 						.build();
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public RegisterResponse registerAdmin(AuthRequest request) {
 		return null;
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public LoginResponse login(AuthRequest request) {
 		// untuk pengetest'an apakah bisa buat token atau enggak?

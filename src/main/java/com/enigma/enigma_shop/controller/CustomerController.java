@@ -2,6 +2,9 @@ package com.enigma.enigma_shop.controller;
 
 import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
+import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
+import com.enigma.enigma_shop.dto.response.CommonResponse;
+import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
 import com.enigma.enigma_shop.service.CustomerService;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -27,13 +30,18 @@ public class CustomerController {
 //    udah enggak ada lagi, karena kita create customer saat register
 
     @GetMapping(path = APIUrl.PATH_VAR_ID)
-    public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {
-        Customer customer = customerService.getById(id);
-        return ResponseEntity.ok(customer);
+    public ResponseEntity<CommonResponse<CustomerResponse>> getCustomerById(@PathVariable String id) {
+        CustomerResponse customer = customerService.getOneById(id);
+        CommonResponse<CustomerResponse> response = CommonResponse.<CustomerResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("successfully fetch data")
+                .data(customer)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Customer>> getAllCustomer(
+    public ResponseEntity<CommonResponse<List<CustomerResponse>>> getAllCustomer(
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "mobilePhoneNo", required = false) String phoneNumber,
             @RequestParam(name = "birthDate", required = false) @JsonFormat(pattern = "yyyy-MM-dd") String birthDate, // pakai json format untuk format datenya
@@ -50,28 +58,47 @@ public class CustomerController {
                 .birthDate(birthDate)
                 .status(status)
                 .build(); // ini seperti keyword new
-        List<Customer> customers = customerService.getAll(searchCustomerRequest);
-        return ResponseEntity.ok(customers);
+         List<CustomerResponse> customers = customerService.getAll(searchCustomerRequest);
+        CommonResponse<List<CustomerResponse>> response = CommonResponse.<List<CustomerResponse>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("successfully fetch data")
+                .data(customers)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping
-    public ResponseEntity<Customer> updateCustomer(@RequestBody Customer payload) {
-        Customer customer = customerService.update(payload);
-        return ResponseEntity.ok(customer);
+    public ResponseEntity<CommonResponse<CustomerResponse>> updateCustomer(@RequestBody UpdateCustomerRequest payload) {
+        CustomerResponse customer = customerService.update(payload);
+        CommonResponse<CustomerResponse> response = CommonResponse.<CustomerResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("successfully update data")
+                .data(customer)
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping(path = APIUrl.PATH_VAR_ID)
-    public ResponseEntity<String> deleteById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<String>> deleteById(@PathVariable String id) {
         customerService.deleteById(id);
-        return ResponseEntity.ok("OK Succes Delete Customer");
+        CommonResponse<String> response = CommonResponse.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("OK Succes Delete Customer")
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping(path = "/{id}")
-    public ResponseEntity<String> UpdateStatus(
+    public ResponseEntity<CommonResponse<String>> UpdateStatus(
             @PathVariable String id,
             @RequestParam(name = "status") Boolean status){
         customerService.updateStatusById(id, status);
-        return ResponseEntity.ok("Oke success update status");
+        CommonResponse<String> response = CommonResponse.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Oke success update status")
+                .build();
+        return ResponseEntity.ok(response);
     }
 
 }
