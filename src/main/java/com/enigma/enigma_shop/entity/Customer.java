@@ -3,10 +3,7 @@ package com.enigma.enigma_shop.entity;
 import com.enigma.enigma_shop.constant.ConstantTable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
@@ -16,6 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = ConstantTable.CUSTOMER)
+@Builder
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,5 +37,14 @@ public class Customer {
 
     // setelah kita buat update status, bisa jelasin, kalau nanti status itu jangan di update di sini, nanti kita bisa pakai DTO
 
+    // kita tambahkan relasi seleah buat register
+    @OneToOne
+    @JoinColumn(name = "user_account_id", unique = true) // kita buat column baru untuk FK
+    private UserAccount userAccount;
+
+    // nah harusnya saat buat user, customer juga kebuat, walaupun enggak ada datanya
+    // nah disini gw sengaja enggak menambahkan nullable = false
+    // jadi ketika kita registrasi akun cusomer, customernya juga kebuat tapi datanya masih kososng atau null semua
+    // paling enggak status lah yg udah ada isinya, statusnya true / aktif
 
 }

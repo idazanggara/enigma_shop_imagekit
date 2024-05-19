@@ -17,13 +17,14 @@ import java.util.List;
 @RequestMapping(path = APIUrl.CUSTOMER_API)
 public class CustomerController {
     private final CustomerService customerService;
-    @PostMapping
-    public ResponseEntity<Customer> createNewCustomer(@RequestBody Customer product) {
-        Customer customer = customerService.create(product);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(customer);
-    }
+//    @PostMapping
+//    public ResponseEntity<Customer> createNewCustomer(@RequestBody Customer product) {
+//        Customer customer = customerService.create(product);
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//                .body(customer);
+//    }
+//    udah enggak ada lagi, karena kita create customer saat register
 
     @GetMapping(path = APIUrl.PATH_VAR_ID)
     public ResponseEntity<Customer> getCustomerById(@PathVariable String id) {

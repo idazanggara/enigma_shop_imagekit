@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, String>, JpaSpecificationExecutor<Product> {
+public interface ProductRepository extends JpaRepository<Product, String>, JpaSpecificationExecutor<Product > {
     // query method
     // find by name -< tidak boleh sembarangan buat nama
     // Optional<T> findBy... -> result List/Satuan
