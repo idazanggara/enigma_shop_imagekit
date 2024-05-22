@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,6 +41,12 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+
+    // methodnya
+    // hasAnyRole() -> multi role
+    // hasRole() -> single role
+    // nah di constant nya kan ada ROLE_nya, tapi disini kita enggak perlu tambahkan
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')")
     @GetMapping
     public ResponseEntity<CommonResponse<List<CustomerResponse>>> getAllCustomer(
             @RequestParam(name = "name", required = false) String name,

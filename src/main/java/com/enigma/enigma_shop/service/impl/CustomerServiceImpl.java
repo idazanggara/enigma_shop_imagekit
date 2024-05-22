@@ -1,11 +1,14 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.constant.UserRole;
 import com.enigma.enigma_shop.dto.request.SearchCustomerRequest;
 import com.enigma.enigma_shop.dto.request.UpdateCustomerRequest;
 import com.enigma.enigma_shop.dto.response.CustomerResponse;
 import com.enigma.enigma_shop.entity.Customer;
+import com.enigma.enigma_shop.entity.UserAccount;
 import com.enigma.enigma_shop.repository.CustomerRepository;
 import com.enigma.enigma_shop.service.CustomerService;
+import com.enigma.enigma_shop.service.UserService;
 import com.enigma.enigma_shop.specification.CustomerSpecification;
 import com.enigma.enigma_shop.util.ValidationUtil;
 import jakarta.persistence.EntityManager;
@@ -16,6 +19,9 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +36,8 @@ public class CustomerServiceImpl implements CustomerService {
     private final EntityManager entityManager; // dan sudah di instance ya
     private final CustomerRepository customerRepository;
     private final ValidationUtil validationUtil;
+    private final UserService userService;
+
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -172,6 +180,17 @@ public class CustomerServiceImpl implements CustomerService {
 //        return convertCustomerToCustomerResponse(updatedCustomer);
         validationUtil.validate(customerRequest);
         Customer currentCustomer = findByIdOrThrowNotFound(customerRequest.getId());
+
+        // ini part setelah Authorization automates
+        UserAccount userAccount = userService.getByContext();
+
+        // jadi kita check userAccoutn yg ada di Security Context dan UserAccpunt yg di input dari client setelah di check
+        if (!userAccount.getId().equals(currentCustomer.getUserAccount().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "user not found");
+        }
+
+        // ini part setelah Authorization automates
+
         currentCustomer.setName(customerRequest.getName());
         currentCustomer.setMobilePhoneNo(customerRequest.getMobilePhoneNo());
         currentCustomer.setAddress(customerRequest.getAddress());

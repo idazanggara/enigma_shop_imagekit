@@ -10,4 +10,7 @@ public interface UserService extends UserDetailsService {
   // kita kosongin dulu
 
 	UserAccount getByUserId(String id);
+
+
+	UserAccount getByContext();
 }
