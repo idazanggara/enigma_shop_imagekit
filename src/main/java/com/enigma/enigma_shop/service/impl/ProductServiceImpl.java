@@ -3,6 +3,7 @@ package com.enigma.enigma_shop.service.impl;
 import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
+import com.enigma.enigma_shop.dto.request.UpdateProductRequest;
 import com.enigma.enigma_shop.dto.response.ImageResponse;
 import com.enigma.enigma_shop.dto.response.ProductResponse;
 import com.enigma.enigma_shop.entity.Image;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -90,6 +92,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponse getOneById(String id) {
+        Product product = findByIdOrThrowNotFound(id);
+        return parseProductToProductResponse(product);
+    }
+
+    @Override
     public List<Product> getAllQueryMethod(String name) {
 //        productRepository.findByName() tapi enggak ada nih find by name
         // harus apa nih gw, bikin query method di repository
@@ -99,12 +107,23 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Product update(Product product) {
+    public ProductResponse update(UpdateProductRequest request) {
         /**
          * ubah gambar, jika ada gambar, hapus dan ganti gambar baru
          * jika tidak ada gambar maka ubah product detailnya aja
          * */
+        Product currentProduct = findByIdOrThrowNotFound(request.getId());
+        currentProduct.setName(request.getName());
+        currentProduct.setPrice(request.getPrice());
+        currentProduct.setStock(request.getStock());
+        productRepository.saveAndFlush(currentProduct);
+        return parseProductToProductResponse(currentProduct);
+    }
+
+    @Override
+    public Product update(Product product) {
         // pertama bisa di cari dulu idnya
 //        productRepository.findById(product.getId());// tapi ini kan berulang, kita udah ada getbyid diatas
         getById(product.getId()); // dah begini aja, jangan di return apapun, kalau nanti idnya enggak ada, dia akan throw diatas
@@ -122,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<Product> getAll(SearchProductRequest request) {
+    public Page<ProductResponse> getAll(SearchProductRequest request) {
         // kalau mau di kasih validasi
         if(request.getPage() <= 0) {
             request.setPage(1);
@@ -138,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of((request.getPage() - 1), request.getSize(), sort);
 
         Specification<Product> specification = ProductSpecification.getSpecification(request);
-        return productRepository.findAll(specification ,pageable);
+        return productRepository.findAll(specification ,pageable).map(this::parseProductToProductResponse);
     }
 
     private ProductResponse parseProductToProductResponse(Product product) {
@@ -163,5 +182,9 @@ public class ProductServiceImpl implements ProductService {
                         .name(name)
                         .build())
                 .build();
+    }
+
+    private Product findByIdOrThrowNotFound(String id) {
+        return productRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "data not found"));
     }
 }

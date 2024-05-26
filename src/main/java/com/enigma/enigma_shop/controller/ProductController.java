@@ -97,33 +97,33 @@ public class ProductController {
     }
 
 //    @GetMapping
-    public ResponseEntity<Page<Product>> getAllProductOld(
-            @RequestParam(name = "page",defaultValue = "1") Integer page,
-            @RequestParam(name = "size", defaultValue = "10") Integer size,
-            // kan nanti bisa banyak yg kita kirim ya
-            // nanti ada filter data macem-macem disini
-            // berarti kita pakai apa? requestDTO
-
-            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
-            @RequestParam(name = "direction", defaultValue = "asc") String direction,
-
-            // sekarang kita coba tambahkan spesification
-            @RequestParam(name = "name" ,required = false) String name
-    ){
-        SearchProductRequest request = SearchProductRequest.builder()
-                .page(page)
-                .size(size)
-                .sortBy(sortBy)
-                .direction(direction)
-                .name(name)
-                .build();
-//        return productService.getAll(request);
-        Page<Product> products = productService.getAll(request);
-        return ResponseEntity.ok(products);
-    }
+//    public ResponseEntity<Page<Product>> getAllProductOld(
+//            @RequestParam(name = "page",defaultValue = "1") Integer page,
+//            @RequestParam(name = "size", defaultValue = "10") Integer size,
+//            // kan nanti bisa banyak yg kita kirim ya
+//            // nanti ada filter data macem-macem disini
+//            // berarti kita pakai apa? requestDTO
+//
+//            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+//            @RequestParam(name = "direction", defaultValue = "asc") String direction,
+//
+//            // sekarang kita coba tambahkan spesification
+//            @RequestParam(name = "name" ,required = false) String name
+//    ){
+//        SearchProductRequest request = SearchProductRequest.builder()
+//                .page(page)
+//                .size(size)
+//                .sortBy(sortBy)
+//                .direction(direction)
+//                .name(name)
+//                .build();
+////        return productService.getAll(request);
+//        Page<Product> products = productService.getAll(request);
+//        return ResponseEntity.ok(products);
+//    }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<Product>>> getAllProduct(
+    public ResponseEntity<CommonResponse<List<ProductResponse>>> getAllProduct(
             @RequestParam(name = "page",defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
             @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
@@ -137,7 +137,7 @@ public class ProductController {
                 .direction(direction)
                 .name(name)
                 .build();
-        Page<Product> products = productService.getAll(request);
+        Page<ProductResponse> products = productService.getAll(request);
         // kita ubah jadi common response
         PagingResponse pagingResponse = PagingResponse.builder()
                 .totalPages(products.getTotalPages())
@@ -149,7 +149,7 @@ public class ProductController {
                 .build();
 
         // kita buat list dulu, baru seletah itu pagingResponse
-        CommonResponse<List<Product>> response = CommonResponse.<List<Product>>builder()
+        CommonResponse<List<ProductResponse>> response = CommonResponse.<List<ProductResponse>>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message("success get all product")
                 .data(products.getContent())
