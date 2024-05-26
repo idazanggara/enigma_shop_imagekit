@@ -1,12 +1,18 @@
 package com.enigma.enigma_shop.service.impl;
 
+import com.enigma.enigma_shop.constant.APIUrl;
 import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
+import com.enigma.enigma_shop.dto.response.ImageResponse;
+import com.enigma.enigma_shop.dto.response.ProductResponse;
+import com.enigma.enigma_shop.entity.Image;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.repository.ProductRepository;
+import com.enigma.enigma_shop.service.ImageService;
 import com.enigma.enigma_shop.service.ProductService;
 import com.enigma.enigma_shop.specification.ProductSpecification;
 import com.enigma.enigma_shop.util.ValidationUtil;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,10 +44,12 @@ public class ProductServiceImpl implements ProductService {
 //        this.productRepository = productRepository;
 //    }
 
-     private final ValidationUtil validationUtil;
+    private final ValidationUtil validationUtil;
+    private final ImageService imageService;
+
 
     @Override
-    public Product create(NewProductRequest productRequest) {
+    public ProductResponse create(NewProductRequest productRequest) {
         // productRepository.
         // kenapa ada method yg cukup banyak? ada yg bisa jelasin?
         // soalnya interface repository kita extend, dan ketika save udah otomatis menerima entity yg kita set di repository, coba kita ganti object
@@ -49,12 +57,19 @@ public class ProductServiceImpl implements ProductService {
 //        Product newProduct = productRepository.saveAndFlush(product);
 
         validationUtil.validate(productRequest); // ini selalu di panggil paling atas
+
+        if (productRequest.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
+
+        Image image = imageService.create(productRequest.getImage());
+
         Product product = Product.builder()
                 .name(productRequest.getName())
                 .price(productRequest.getPrice())
                 .stock(productRequest.getStock())
+                .image(image)
                 .build();
-        return productRepository.saveAndFlush(product);
+        productRepository.saveAndFlush(product);
+        return parseProductToProductResponse(product);
     }
 
     @Override
@@ -86,11 +101,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product update(Product product) {
+        /**
+         * ubah gambar, jika ada gambar, hapus dan ganti gambar baru
+         * jika tidak ada gambar maka ubah product detailnya aja
+         * */
         // pertama bisa di cari dulu idnya
 //        productRepository.findById(product.getId());// tapi ini kan berulang, kita udah ada getbyid diatas
         getById(product.getId()); // dah begini aja, jangan di return apapun, kalau nanti idnya enggak ada, dia akan throw diatas
         return productRepository.saveAndFlush(product);
         // nah update sama nih, tinggal save aja, tapi kalian bisa validasi diatas
+
+
     }
 
     @Override
@@ -118,5 +139,29 @@ public class ProductServiceImpl implements ProductService {
 
         Specification<Product> specification = ProductSpecification.getSpecification(request);
         return productRepository.findAll(specification ,pageable);
+    }
+
+    private ProductResponse parseProductToProductResponse(Product product) {
+        String imageId;
+        String name;
+        if(product.getImage() == null){
+            imageId = null;
+            name = null;
+        } else {
+            imageId = product.getImage().getId();
+            name = product.getImage().getName();
+        }
+
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .image(ImageResponse.builder()
+                        .url(APIUrl.PRODUCT_IMAGE_DOWNLOAD_API + imageId)
+                        .name(name)
+                        .build())
+                .build();
     }
 }

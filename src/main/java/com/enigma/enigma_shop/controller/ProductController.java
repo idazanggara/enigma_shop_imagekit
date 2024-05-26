@@ -5,14 +5,19 @@ import com.enigma.enigma_shop.dto.request.NewProductRequest;
 import com.enigma.enigma_shop.dto.request.SearchProductRequest;
 import com.enigma.enigma_shop.dto.response.CommonResponse;
 import com.enigma.enigma_shop.dto.response.PagingResponse;
+import com.enigma.enigma_shop.dto.response.ProductResponse;
 import com.enigma.enigma_shop.entity.Product;
 import com.enigma.enigma_shop.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,6 +27,8 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
+    private final ObjectMapper objectMapper;
+
     // nah inika dia butuh contructor seperti ini, dari pada panjang
 //    @Autowired
 //    public ProductController(ProductService productService) {
@@ -30,24 +37,53 @@ public class ProductController {
 
 //    @PostMapping(path = "/api/products")
 //    @GetMapping(path = "/api/products/{id}")
-    @PostMapping
-    public ResponseEntity<CommonResponse<Product>>  createNewProduct(@RequestBody NewProductRequest productRequest){
-        // return productService.create(product);
-        Product newProduct = productService.create(productRequest);
+//    @PostMapping
+//    public ResponseEntity<CommonResponse<Product>>  createNewProduct(@RequestBody NewProductRequest productRequest){
+//        // return productService.create(product);
+//        Product newProduct = productService.create(productRequest);
+////        return ResponseEntity
+////                .status(HttpStatus.CREATED)
+////                .body(newProduct); // cuman returnya jadi error nih guys, harus kita bungkus jadi common response dulu nih\
+//        // nah kalau tanda tanya tadi enggak wajib, tapi kalau bukan tanda tanya wajib kita kasih objectnya
+//        CommonResponse<Product> response = CommonResponse.<Product>builder()
+//                .statusCode(HttpStatus.CREATED.value())
+//                .message("successfully create new customer")
+//                .data(newProduct)
+//                .build();
 //        return ResponseEntity
 //                .status(HttpStatus.CREATED)
-//                .body(newProduct); // cuman returnya jadi error nih guys, harus kita bungkus jadi common response dulu nih\
-        // nah kalau tanda tanya tadi enggak wajib, tapi kalau bukan tanda tanya wajib kita kasih objectnya
-        CommonResponse<Product> response = CommonResponse.<Product>builder()
-                .statusCode(HttpStatus.CREATED.value())
-                .message("successfully create new customer")
-                .data(newProduct)
-                .build();
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+//                .body(response);
+//
+//    }
 
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CommonResponse<?>>  createNewProductWithImage(
+            @RequestPart(name = "product") String jsonProductRequest,
+            @RequestPart(name = "image") MultipartFile image // MultipartFile by defaul kalau kita enggak kirim image, datanya sudah ada.
+    ){
+        CommonResponse.CommonResponseBuilder<ProductResponse> responseBuilder = CommonResponse.builder();
+        try {
+            NewProductRequest productRequest = objectMapper.readValue(jsonProductRequest, new TypeReference<>() {
+            });
+            productRequest.setImage(image);// jadi nanti begini guys,
+            System.out.println("========================== testing"+productRequest);
+            ProductResponse newProduct = productService.create(productRequest);
+
+            // nanti setelah selesai
+            responseBuilder.statusCode(HttpStatus.CREATED.value());
+            responseBuilder.message("successfully save data");
+            responseBuilder.data(newProduct);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseBuilder.build());
+        }catch (Exception e){
+            responseBuilder.message("internal server error");
+            responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
+        }
     }
+
     @GetMapping(path = APIUrl.PATH_VAR_ID)
     public ResponseEntity<CommonResponse<Product>> getById(@PathVariable String id) {
         // return  productService.getById(id);
