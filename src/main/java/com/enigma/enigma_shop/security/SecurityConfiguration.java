@@ -37,6 +37,7 @@ public class SecurityConfiguration {
 										.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll() // kalau error kita permit juga
 										.requestMatchers("/api/v1/auth/**").permitAll()  // jadi semua yg akse /api/auth kita permit dulu atau disable authnya. dan selain itu baru kita authenticated
 										.requestMatchers("/api/v1/test-download/**").permitAll()
+										.requestMatchers("/api/products/images/**").permitAll()
 										.anyRequest().authenticated()) // regist dan login enggak butuh auth
 //						.addFilter() cuman filternya belum ada, jadi buat dulu
 						.addFilterBefore(

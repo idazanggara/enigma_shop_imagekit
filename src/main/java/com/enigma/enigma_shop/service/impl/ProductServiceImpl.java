@@ -50,30 +50,67 @@ public class ProductServiceImpl implements ProductService {
     private final ImageService imageService;
 
 
+//    @Override
+//    public ProductResponse create(NewProductRequest productRequest) {
+//        // productRepository.
+//        // kenapa ada method yg cukup banyak? ada yg bisa jelasin?
+//        // soalnya interface repository kita extend, dan ketika save udah otomatis menerima entity yg kita set di repository, coba kita ganti object
+//        // saveAndFlush, jadi ketika product gw save, dia akan otomatis mengembalikan id yg berhasil kedave
+////        Product newProduct = productRepository.saveAndFlush(product);
+//
+//        validationUtil.validate(productRequest); // ini selalu di panggil paling atas
+//
+//        if (productRequest.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
+//
+//        Image image = imageService.create(productRequest.getImage());
+//
+//        Product product = Product.builder()
+//                .name(productRequest.getName())
+//                .price(productRequest.getPrice())
+//                .stock(productRequest.getStock())
+//                .image(image)
+//                .build();
+//        productRepository.saveAndFlush(product);
+//        return parseProductToProductResponse(product);
+//    }
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public ProductResponse create(NewProductRequest productRequest) {
-        // productRepository.
-        // kenapa ada method yg cukup banyak? ada yg bisa jelasin?
-        // soalnya interface repository kita extend, dan ketika save udah otomatis menerima entity yg kita set di repository, coba kita ganti object
-        // saveAndFlush, jadi ketika product gw save, dia akan otomatis mengembalikan id yg berhasil kedave
-//        Product newProduct = productRepository.saveAndFlush(product);
+    public ProductResponse create(NewProductRequest request) {
+        validationUtil.validate(request);
 
-        validationUtil.validate(productRequest); // ini selalu di panggil paling atas
+        if (request.getImage() == null || request.getImage().isEmpty()) {
+            throw new ConstraintViolationException("Image is required", null);
+        }
 
-        if (productRequest.getImage().isEmpty()) throw new ConstraintViolationException("image is required", null);
+        // Handle image upload using ImageKit
+        Image image = imageService.create(request.getImage());
 
-        Image image = imageService.create(productRequest.getImage());
+        // Create and save the new product
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setImage(image);
+        product = productRepository.save(product); // Saving the product
 
-        Product product = Product.builder()
-                .name(productRequest.getName())
-                .price(productRequest.getPrice())
-                .stock(productRequest.getStock())
-                .image(image)
-                .build();
-        productRepository.saveAndFlush(product);
-        return parseProductToProductResponse(product);
+        // Build and return the product response
+        return convertProductToProductResponse(product);
     }
 
+    // Utility method to convert Product to ProductResponse
+    private ProductResponse convertProductToProductResponse(Product product) {
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .stock(product.getStock())
+                .image(ImageResponse.builder()
+                        .url(product.getImage().getPath())
+                        .name(product.getImage().getName())
+                        .build())
+                .build();
+    }
     @Override
     public Product getById(String id) {
         // nah kalau kita .var, pengembaliannya jadi Optional. nah optional ini cukup powerfull

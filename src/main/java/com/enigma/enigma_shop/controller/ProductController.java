@@ -56,33 +56,68 @@ public class ProductController {
 //
 //    }
 
+//    @PostMapping(
+//            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+//            produces = MediaType.APPLICATION_JSON_VALUE
+//    )
+//    public ResponseEntity<CommonResponse<?>>  createNewProductWithImage(
+//            @RequestPart(name = "product") String jsonProductRequest,
+//            @RequestPart(name = "image") MultipartFile image // MultipartFile by defaul kalau kita enggak kirim image, datanya sudah ada.
+//    ){
+//        CommonResponse.CommonResponseBuilder<ProductResponse> responseBuilder = CommonResponse.builder();
+//        try {
+//            NewProductRequest productRequest = objectMapper.readValue(jsonProductRequest, new TypeReference<>() {
+//            });
+//            productRequest.setImage(image);// jadi nanti begini guys,
+//            System.out.println("========================== testing"+productRequest);
+//            ProductResponse newProduct = productService.create(productRequest);
+//
+//            // nanti setelah selesai
+//            responseBuilder.statusCode(HttpStatus.CREATED.value());
+//            responseBuilder.message("successfully save data");
+//            responseBuilder.data(newProduct);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(responseBuilder.build());
+//        }catch (Exception e){
+//            responseBuilder.message("internal server error");
+//            responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
+//        }
+//    }
+
     @PostMapping(
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<CommonResponse<?>>  createNewProductWithImage(
+    public ResponseEntity<CommonResponse<?>> createNewProductWithImage(
             @RequestPart(name = "product") String jsonProductRequest,
-            @RequestPart(name = "image") MultipartFile image // MultipartFile by defaul kalau kita enggak kirim image, datanya sudah ada.
-    ){
+            @RequestPart(name = "image") MultipartFile image
+    ) {
         CommonResponse.CommonResponseBuilder<ProductResponse> responseBuilder = CommonResponse.builder();
         try {
-            NewProductRequest productRequest = objectMapper.readValue(jsonProductRequest, new TypeReference<>() {
-            });
-            productRequest.setImage(image);// jadi nanti begini guys,
-            System.out.println("========================== testing"+productRequest);
+            // Deserialize JSON string to NewProductRequest object
+            NewProductRequest productRequest = objectMapper.readValue(jsonProductRequest, new TypeReference<>() {});
+            productRequest.setImage(image);
+
+            // Logging for debug purposes, can be removed in production
+            System.out.println("Received product request: " + productRequest);
+
+            // Creating the product and managing the image upload within the productService
             ProductResponse newProduct = productService.create(productRequest);
 
-            // nanti setelah selesai
+            // Build successful response
             responseBuilder.statusCode(HttpStatus.CREATED.value());
-            responseBuilder.message("successfully save data");
+            responseBuilder.message("Successfully saved product data with image.");
             responseBuilder.data(newProduct);
             return ResponseEntity.status(HttpStatus.CREATED).body(responseBuilder.build());
-        }catch (Exception e){
-            responseBuilder.message("internal server error");
+        } catch (Exception e) {
+            // Log error or handle accordingly
+            e.printStackTrace(); // Better error handling and logging should be implemented
+            responseBuilder.message("Internal server error: " + e.getMessage());
             responseBuilder.statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBuilder.build());
         }
     }
+
 
     @GetMapping(path = APIUrl.PATH_VAR_ID)
     public ResponseEntity<CommonResponse<Product>> getById(@PathVariable String id) {
